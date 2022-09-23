@@ -5,11 +5,17 @@ import kz.meirambekuly.googlemaps.repositories.LocationRepository;
 import kz.meirambekuly.googlemaps.services.LocationService;
 import kz.meirambekuly.googlemaps.web.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.io.FileInputStream;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 @Service
 @RequiredArgsConstructor
@@ -62,14 +68,77 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    public ResponseDto<?> saveLocation(Location location) {
-        Location newLocation = locationRepository.save(location);
+    public ResponseDto<?> saveLocation() {
+        if(readExcelFile("C:\\Users\\user\\Desktop\\googleMaps\\src\\main\\resources\\data.xlsx")){
+            return ResponseDto.builder()
+                    .isSuccess(true)
+                    .httpStatus(HttpStatus.OK.value())
+                    .data("")
+                    .build();
+        }
         return ResponseDto.builder()
-                .isSuccess(true)
-                .httpStatus(HttpStatus.OK.value())
-                .data(newLocation)
+                .isSuccess(false)
+                .httpStatus(HttpStatus.NO_CONTENT.value())
+                .errorMessage("Error importing location!")
                 .build();
     }
+
+    public boolean readExcelFile(String fileName)
+    {
+        /** --Define a Vector
+         --Holds Vectors Of Cells
+         */
+        try{
+            /** Creating Input Stream**/
+            //InputStream myInput= ReadExcelFile.class.getResourceAsStream( fileName );
+            FileInputStream myInput = new FileInputStream(fileName);
+
+            /** Create a POIFSFileSystem object**/
+
+            /** Create a workbook using the File System**/
+            XSSFWorkbook myWorkBook = new XSSFWorkbook(myInput);
+            for (int i = 0; i < myWorkBook.getNumberOfSheets(); i++) {
+                /** Get the first sheet from workbook**/
+                XSSFSheet mySheet = myWorkBook.getSheetAt(i);
+                /** We now need something to iterate through the cells.**/
+                Iterator rowIter = mySheet.rowIterator();
+
+                while(rowIter.hasNext()){
+                    XSSFRow myRow = (XSSFRow) rowIter.next();
+                    if (myRow.getCell(0) != null){
+                        Iterator cellIter = myRow.cellIterator();
+                        Vector cellStoreVector=new Vector();
+                        while(cellIter.hasNext()){
+                            XSSFCell myCell = (XSSFCell) cellIter.next();
+                            cellStoreVector.addElement(myCell.toString());
+                        }
+                        cellStoreVector.addElement(String.valueOf(i));
+                        if(!cellStoreVector.get(0).equals("Latitude") && !cellStoreVector.get(0).equals("") ){
+                            double lat = Double.parseDouble((String) cellStoreVector.get(0));
+                            double lng = Double.parseDouble((String)cellStoreVector.get(1));
+                            double alt = Double.parseDouble((String)cellStoreVector.get(2));
+                            String identifier = (String)cellStoreVector.get(3);
+                            int timestamp = (int)Double.parseDouble((String)cellStoreVector.get(4));
+                            int floor = (int)Double.parseDouble(((String)cellStoreVector.get(5)).equals("null") ? "0" : (String)cellStoreVector.get(5));
+                            double horizontal = Double.parseDouble((String)cellStoreVector.get(6));
+                            double vertical = Double.parseDouble((String)cellStoreVector.get(7));
+                            double confidence = Double.parseDouble((String)cellStoreVector.get(8));
+                            String activity = (String)cellStoreVector.get(9);
+                            int pageNumber = Integer.parseInt((String)cellStoreVector.get(10))+1;
+                            Location location = new Location(lat, lng, alt, identifier, timestamp, floor, horizontal, vertical, confidence,activity, pageNumber);
+                            locationRepository.save(location);
+                        }
+                    }
+                }
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
 
 //    @Override
 //    public ResponseDto<?> updateLocation(Location location) {

@@ -11,7 +11,7 @@ public interface LocationService {
 
     ResponseDto<?> getLocationsByIdentifier(String identifier);
 
-    ResponseDto<?> saveLocation(Location location);
+    ResponseDto<?> saveLocation();
 
 //    ResponseDto<?> updateLocation(Location location);
 }

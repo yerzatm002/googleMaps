@@ -32,7 +32,7 @@ public class Location {
     private String identifier;
 
     @Column(name = "elapsed_timestamp", nullable = false)
-    private long timestamp;
+    private int timestamp;
 
     @Column(name = "floor_label")
     private Integer floor;
@@ -46,7 +46,22 @@ public class Location {
     @Column(name = "confidence_accuracy", nullable = false)
     private double confidence;
 
+    private String activity;
+
     @Column(name = "page_number", nullable = false)
     private int pageNumber;
 
+    public Location(double lat, double lng, double alt, String identifier, int timestamp, int floor, double horizontal, double vertical, double confidence, String activity, int pageNumber) {
+        this.lat = lat;
+        this.lng = lng;
+        this.alt = alt;
+        this.identifier = identifier;
+        this.timestamp = timestamp;
+        this.floor = floor;
+        this.horizontal = horizontal;
+        this.vertical = vertical;
+        this.confidence = confidence;
+        this.activity = activity;
+        this.pageNumber = pageNumber;
+    }
 }

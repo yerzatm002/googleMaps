@@ -28,8 +28,8 @@ public class LocationController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody Location location){
-        return ResponseEntity.ok(locationService.saveLocation(location));
+    public ResponseEntity<?> save(){
+        return ResponseEntity.ok(locationService.saveLocation());
     }
 
 }
