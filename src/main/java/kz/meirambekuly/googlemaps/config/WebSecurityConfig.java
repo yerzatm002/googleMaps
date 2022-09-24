@@ -16,4 +16,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
     }
+
+    @Autowired
+    private CustomOAuth2UserService oauthUserService;
 }

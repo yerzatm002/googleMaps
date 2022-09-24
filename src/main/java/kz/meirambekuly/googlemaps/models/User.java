@@ -23,7 +23,7 @@ public class User {
     private String username;
 
     private String password;
-
+    @Enumerated(EnumType.STRING)
     private Provider provider;
 
     private boolean enabled;
@@ -31,4 +31,12 @@ public class User {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "roleId", referencedColumnName = "id")
     private Role role;
+
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(Provider provider) {
+        this.provider = provider;
+    }
 }
