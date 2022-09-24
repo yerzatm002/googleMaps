@@ -1,5 +1,6 @@
 package kz.meirambekuly.googlemaps.services.impl;
 
+import kz.meirambekuly.googlemaps.config.jwt.Jwt;
 import kz.meirambekuly.googlemaps.constants.Provider;
 import kz.meirambekuly.googlemaps.models.User;
 import kz.meirambekuly.googlemaps.repositories.RoleRepository;
@@ -8,16 +9,23 @@ import kz.meirambekuly.googlemaps.services.UserService;
 import kz.meirambekuly.googlemaps.utils.ObjectMapper;
 import kz.meirambekuly.googlemaps.utils.PasswordEncoder;
 import kz.meirambekuly.googlemaps.utils.SecurityUtils;
+import kz.meirambekuly.googlemaps.web.UserController;
 import kz.meirambekuly.googlemaps.web.dto.ResponseDto;
 import kz.meirambekuly.googlemaps.web.dto.UserCreatorDto;
 import kz.meirambekuly.googlemaps.web.dto.UserDto;
+import kz.meirambekuly.googlemaps.web.dto.UserLoginDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +33,16 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+
+    @Override
+    public ResponseDto<?> findAllUsers() {
+        List<UserDto> userDtoList = userRepository.findAll().stream().map(ObjectMapper::convertToUserDto).collect(Collectors.toList());
+        return ResponseDto.builder()
+                .isSuccess(true)
+                .httpStatus(HttpStatus.OK.value())
+                .data(userDtoList)
+                .build();
+    }
 
     @Override
     public ResponseDto<?> findByEmail(String email) {
@@ -89,8 +107,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public ResponseDto<?> login(UserLoginDto dto) {
+        Optional<User> user = userRepository.getUserByEmailAndPassword(dto.getEmail(), PasswordEncoder.hashcode(dto.getPassword()));
+        if(user.isPresent()){
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.get().getRole().getName()));
+            return ResponseDto.builder()
+                    .isSuccess(true)
+                    .httpStatus(HttpStatus.OK.value())
+                    .data("Bearer " + Jwt.generateJwt(dto.getEmail(),authorities))
+                    .build();
+        }
+        return ResponseDto.builder()
+                .isSuccess(false)
+                .httpStatus(HttpStatus.BAD_REQUEST.value())
+                .errorMessage("Email or password INCORRECT!")
+                .build();
+    }
+
+    @Override
     public ResponseDto<?> getToken() {
-        return null;
+        if (SecurityUtils.isAuthenticated()) {
+            String token = Jwt.generateJwt(SecurityUtils.getCurrentUserLogin(), SecurityUtils.getAuthorities());
+            return ResponseDto.builder()
+                    .isSuccess(true)
+                    .httpStatus(HttpStatus.OK.value())
+                    .data(token)
+                    .build();
+        }
+        return ResponseDto.builder()
+                .isSuccess(false)
+                .httpStatus(HttpStatus.UNAUTHORIZED.value())
+                .errorMessage("UNAUTHORIZED")
+                .build();
     }
 
     @Override
@@ -113,7 +162,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public ResponseDto<?> updateUser(UserDto dto) {
+    public ResponseDto<?> updateUser(UserCreatorDto dto) {
         Optional<User> user = userRepository.findUsersByEmail(SecurityUtils.getCurrentUserLogin());
         if (user.isPresent()) {
             if (Objects.nonNull(dto.getUsername())) {
@@ -123,7 +172,7 @@ public class UserServiceImpl implements UserService {
             return ResponseDto.builder()
                     .isSuccess(true)
                     .httpStatus(HttpStatus.OK.value())
-                    .data(user.get().getId())
+                    .data(newUserDto.getId())
                     .build();
         }
         return ResponseDto.builder()
