@@ -53,7 +53,4 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-    @Autowired
-    private CustomOAuth2UserService oauthUserService;
 }

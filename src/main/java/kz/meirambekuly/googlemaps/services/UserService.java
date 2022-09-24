@@ -5,6 +5,8 @@ import kz.meirambekuly.googlemaps.web.dto.UserCreatorDto;
 import kz.meirambekuly.googlemaps.web.dto.UserDto;
 import kz.meirambekuly.googlemaps.web.dto.UserLoginDto;
 
+import java.io.IOException;
+
 
 public interface UserService {
     ResponseDto<?> findAllUsers();
@@ -12,6 +14,8 @@ public interface UserService {
     ResponseDto<?> findByEmail (String email);
 
     ResponseDto<?> findByUsername (String username);
+
+    ResponseDto<?> signInWithGoogle(String authCode) throws IOException;
 
     ResponseDto<?> register (UserCreatorDto dto);
 

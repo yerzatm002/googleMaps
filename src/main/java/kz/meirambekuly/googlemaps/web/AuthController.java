@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -23,5 +25,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login (@RequestBody UserLoginDto dto){
         return ResponseEntity.ok(userService.login(dto));
+    }
+
+    @PostMapping("/google/login")
+    public ResponseEntity<?> googleLogin(@RequestParam("idToken") String idToken) throws IOException {
+        return ResponseEntity.ok(userService.signInWithGoogle(idToken));
     }
 }

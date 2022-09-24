@@ -1,13 +1,12 @@
 package kz.meirambekuly.googlemaps.web;
 
-import kz.meirambekuly.googlemaps.models.Location;
 import kz.meirambekuly.googlemaps.services.LocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api//location")
+@RequestMapping("/api/user/location")
 @RequiredArgsConstructor
 public class LocationController {
     private final LocationService locationService;
