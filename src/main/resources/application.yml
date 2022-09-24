@@ -16,6 +16,4 @@ spring:
           google:
             clientId: 162983259757-5bpcu1ln8qtjm850tmtq355lpo5lhu0i.apps.googleusercontent.com
             clientSecret: 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
-            scope:
-              - email
-              - profile
+
