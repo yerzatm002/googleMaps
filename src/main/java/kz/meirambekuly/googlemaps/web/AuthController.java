@@ -3,6 +3,7 @@ package kz.meirambekuly.googlemaps.web;
 import kz.meirambekuly.googlemaps.services.UserService;
 import kz.meirambekuly.googlemaps.web.dto.UserCreatorDto;
 import kz.meirambekuly.googlemaps.web.dto.UserDto;
+import kz.meirambekuly.googlemaps.web.dto.UserLoginDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserCreatorDto dto){
         return ResponseEntity.ok(userService.register(dto));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login (@RequestBody UserLoginDto dto){
+        return ResponseEntity.ok(userService.login(dto));
     }
 
 }

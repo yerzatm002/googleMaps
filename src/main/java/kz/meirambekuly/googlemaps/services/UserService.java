@@ -3,6 +3,7 @@ package kz.meirambekuly.googlemaps.services;
 import kz.meirambekuly.googlemaps.web.dto.ResponseDto;
 import kz.meirambekuly.googlemaps.web.dto.UserCreatorDto;
 import kz.meirambekuly.googlemaps.web.dto.UserDto;
+import kz.meirambekuly.googlemaps.web.dto.UserLoginDto;
 
 
 public interface UserService {
@@ -11,6 +12,8 @@ public interface UserService {
     ResponseDto<?> findByUsername (String username);
 
     ResponseDto<?> register (UserCreatorDto dto);
+
+    ResponseDto<?> login (UserLoginDto dto);
 
     ResponseDto<?> getToken ();
 

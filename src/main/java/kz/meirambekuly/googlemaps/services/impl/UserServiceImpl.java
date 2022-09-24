@@ -1,5 +1,6 @@
 package kz.meirambekuly.googlemaps.services.impl;
 
+import kz.meirambekuly.googlemaps.config.jwt.Jwt;
 import kz.meirambekuly.googlemaps.constants.Provider;
 import kz.meirambekuly.googlemaps.models.User;
 import kz.meirambekuly.googlemaps.repositories.RoleRepository;
@@ -11,11 +12,16 @@ import kz.meirambekuly.googlemaps.utils.SecurityUtils;
 import kz.meirambekuly.googlemaps.web.dto.ResponseDto;
 import kz.meirambekuly.googlemaps.web.dto.UserCreatorDto;
 import kz.meirambekuly.googlemaps.web.dto.UserDto;
+import kz.meirambekuly.googlemaps.web.dto.UserLoginDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -85,6 +91,25 @@ public class UserServiceImpl implements UserService {
                 .isSuccess(true)
                 .httpStatus(HttpStatus.OK.value())
                 .data(newUser)
+                .build();
+    }
+
+    @Override
+    public ResponseDto<?> login(UserLoginDto dto) {
+        Optional<User> user = userRepository.getUserByEmailAndPassword(dto.getEmail(), PasswordEncoder.hashcode(dto.getPassword()));
+        if(user.isPresent()){
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.get().getRole().getName()));
+            return ResponseDto.builder()
+                    .isSuccess(true)
+                    .httpStatus(HttpStatus.OK.value())
+                    .data("Bearer " + Jwt.generateJwt(dto.getEmail(),authorities))
+                    .build();
+        }
+        return ResponseDto.builder()
+                .isSuccess(false)
+                .httpStatus(HttpStatus.BAD_REQUEST.value())
+                .errorMessage("Email or password INCORRECT!")
                 .build();
     }
 
