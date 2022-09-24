@@ -10,7 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 public class UserCreatorDto {
     private String email;
-    private String username;
     private String password;
 }
 

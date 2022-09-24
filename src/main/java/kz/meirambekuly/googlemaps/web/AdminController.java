@@ -24,9 +24,4 @@ public class AdminController {
     public ResponseEntity<?> getUserByEmail(@RequestParam("email") String email){
         return ResponseEntity.ok(userService.findByEmail(email));
     }
-
-    @GetMapping("/getUserByUsername")
-    public ResponseEntity<?> getUserByUsername(@RequestParam("username") String username){
-        return ResponseEntity.ok(userService.findByUsername(username));
-    }
 }

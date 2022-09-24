@@ -13,8 +13,6 @@ public interface UserService {
 
     ResponseDto<?> findByEmail (String email);
 
-    ResponseDto<?> findByUsername (String username);
-
     ResponseDto<?> signInWithGoogle(String authCode) throws IOException;
 
     ResponseDto<?> register (UserCreatorDto dto);
