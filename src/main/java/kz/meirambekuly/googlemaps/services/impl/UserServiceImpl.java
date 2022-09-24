@@ -9,6 +9,7 @@ import kz.meirambekuly.googlemaps.services.UserService;
 import kz.meirambekuly.googlemaps.utils.ObjectMapper;
 import kz.meirambekuly.googlemaps.utils.PasswordEncoder;
 import kz.meirambekuly.googlemaps.utils.SecurityUtils;
+import kz.meirambekuly.googlemaps.web.UserController;
 import kz.meirambekuly.googlemaps.web.dto.ResponseDto;
 import kz.meirambekuly.googlemaps.web.dto.UserCreatorDto;
 import kz.meirambekuly.googlemaps.web.dto.UserDto;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,16 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+
+    @Override
+    public ResponseDto<?> findAllUsers() {
+        List<UserDto> userDtoList = userRepository.findAll().stream().map(ObjectMapper::convertToUserDto).collect(Collectors.toList());
+        return ResponseDto.builder()
+                .isSuccess(true)
+                .httpStatus(HttpStatus.OK.value())
+                .data(userDtoList)
+                .build();
+    }
 
     @Override
     public ResponseDto<?> findByEmail(String email) {
@@ -115,7 +127,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDto<?> getToken() {
-        return null;
+        if (SecurityUtils.isAuthenticated()) {
+            String token = Jwt.generateJwt(SecurityUtils.getCurrentUserLogin(), SecurityUtils.getAuthorities());
+            return ResponseDto.builder()
+                    .isSuccess(true)
+                    .httpStatus(HttpStatus.OK.value())
+                    .data(token)
+                    .build();
+        }
+        return ResponseDto.builder()
+                .isSuccess(false)
+                .httpStatus(HttpStatus.UNAUTHORIZED.value())
+                .errorMessage("UNAUTHORIZED")
+                .build();
     }
 
     @Override
@@ -138,7 +162,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public ResponseDto<?> updateUser(UserDto dto) {
+    public ResponseDto<?> updateUser(UserCreatorDto dto) {
         Optional<User> user = userRepository.findUsersByEmail(SecurityUtils.getCurrentUserLogin());
         if (user.isPresent()) {
             if (Objects.nonNull(dto.getUsername())) {
@@ -148,7 +172,7 @@ public class UserServiceImpl implements UserService {
             return ResponseDto.builder()
                     .isSuccess(true)
                     .httpStatus(HttpStatus.OK.value())
-                    .data(user.get().getId())
+                    .data(newUserDto.getId())
                     .build();
         }
         return ResponseDto.builder()

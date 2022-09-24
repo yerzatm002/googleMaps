@@ -7,6 +7,8 @@ import kz.meirambekuly.googlemaps.web.dto.UserLoginDto;
 
 
 public interface UserService {
+    ResponseDto<?> findAllUsers();
+
     ResponseDto<?> findByEmail (String email);
 
     ResponseDto<?> findByUsername (String username);
@@ -19,7 +21,7 @@ public interface UserService {
 
     ResponseDto<?> getLoggedUserInformation ();
 
-    ResponseDto<?> updateUser (UserDto dto);
+    ResponseDto<?> updateUser (UserCreatorDto dto);
 
     ResponseDto<?> changePassword(String oldPassword, String newPassword);
 }

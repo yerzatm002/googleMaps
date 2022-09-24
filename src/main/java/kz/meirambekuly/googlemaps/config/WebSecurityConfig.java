@@ -30,9 +30,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new JwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/admin/**").hasAnyRole("SUPER_ADMIN","MODERATOR", "ANALYST", "ACCOUNTANT")
-                .antMatchers("/crm/**").hasAnyRole("SHOP", "SUPER_ADMIN", "BEAUTY_SHOP")
-                .antMatchers("/private/**").authenticated()
+                .antMatchers("/api/admin/**").hasAnyRole("SUPER_ADMIN")
+                .antMatchers("/api/user/**").authenticated()
                 .antMatchers("/v2/api-docs/**",
                         "/v3/api-docs/**",
                         "/swagger-resources/**",
