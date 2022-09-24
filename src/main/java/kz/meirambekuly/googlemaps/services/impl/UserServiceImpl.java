@@ -78,24 +78,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseDto<?> findByUsername(String username) {
-        Optional<User> user = userRepository.findUsersByUsername(username);
-        if(user.isPresent()){
-            UserDto dto = ObjectMapper.convertToUserDto(user.get());
-            return ResponseDto.builder()
-                    .isSuccess(true)
-                    .httpStatus(HttpStatus.OK.value())
-                    .data(dto)
-                    .build();
-        }
-        return ResponseDto.builder()
-                .isSuccess(false)
-                .httpStatus(HttpStatus.NO_CONTENT.value())
-                .errorMessage("User with such name does not exist!")
-                .build();
-    }
-
-    @Override
     public ResponseDto<?> signInWithGoogle(String authCode) throws IOException {
 
 //        if (request.getHeader("X-Requested-With") == null) {
@@ -162,7 +144,6 @@ public class UserServiceImpl implements UserService {
         }
         User user = User.builder()
                 .email(email)
-                .username(name)
                 .provider(Provider.GOOGLE)
                 .enabled(true)
                 .role(roleRepository.findById(1L).get())
@@ -189,17 +170,18 @@ public class UserServiceImpl implements UserService {
         }
         User newUser = User.builder()
                 .email(dto.getEmail())
-                .username(dto.getUsername())
                 .password(PasswordEncoder.hashcode(dto.getPassword()))
                 .enabled(true)
                 .provider(Provider.LOCAL)
                 .role(roleRepository.findById(1L).get())
                 .build();
-        newUser = userRepository.save(newUser);
+        userRepository.save(newUser);
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + newUser.getRole().getName()));
         return ResponseDto.builder()
                 .isSuccess(true)
                 .httpStatus(HttpStatus.OK.value())
-                .data(newUser)
+                .data("Bearer " + Jwt.generateJwt(newUser.getEmail(),authorities))
                 .build();
     }
 
@@ -262,8 +244,8 @@ public class UserServiceImpl implements UserService {
     public ResponseDto<?> updateUser(UserCreatorDto dto) {
         Optional<User> user = userRepository.findUsersByEmail(SecurityUtils.getCurrentUserLogin());
         if (user.isPresent()) {
-            if (Objects.nonNull(dto.getUsername())) {
-                user.get().setUsername(dto.getUsername());
+            if (Objects.nonNull(dto.getEmail())) {
+                user.get().setEmail(dto.getEmail());
             }
             UserDto newUserDto = ObjectMapper.convertToUserDto(userRepository.save(user.get()));
             return ResponseDto.builder()

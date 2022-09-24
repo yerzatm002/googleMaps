@@ -12,7 +12,6 @@ public class ObjectMapper {
         return UserDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())
-                .username(user.getUsername())
                 .role(convertToRoleDto(user.getRole()))
                 .build();
     }
