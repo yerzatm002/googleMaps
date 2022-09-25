@@ -1,27 +1,57 @@
 package kz.meirambekuly.googlemaps.services.impl;
 
+import com.google.api.client.util.Maps;
+import com.google.gson.stream.JsonReader;
+import com.google.firebase.messaging.*;
 import kz.meirambekuly.googlemaps.models.Location;
+import kz.meirambekuly.googlemaps.models.User;
 import kz.meirambekuly.googlemaps.repositories.LocationRepository;
+import kz.meirambekuly.googlemaps.repositories.UserRepository;
 import kz.meirambekuly.googlemaps.services.LocationService;
+import kz.meirambekuly.googlemaps.utils.SecurityUtils;
+import kz.meirambekuly.googlemaps.web.dto.LocationsDto;
 import kz.meirambekuly.googlemaps.web.dto.ResponseDto;
+import kz.meirambekuly.googlemaps.web.dto.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
 
+    private final SimpMessagingTemplate messagingTemplate;
+
+    private final UserRepository userRepository;
     private final LocationRepository locationRepository;
+
+    @Override
+    public ResponseDto<?> saveLocationInDanger(Location location) {
+        Optional<User> user = userRepository.findUsersByEmail(SecurityUtils.getCurrentUserLogin());
+        if(user.isPresent()){
+            Location newLocation = locationRepository.save(location);
+            ResponseMessage response = new ResponseMessage(location);
+            messagingTemplate.convertAndSend("/topic/messages", response);
+            return ResponseDto.builder()
+                    .isSuccess(true)
+                    .httpStatus(HttpStatus.OK.value())
+                    .data(newLocation)
+                    .build();
+        }
+        return ResponseDto.builder()
+                .isSuccess(false)
+                .httpStatus(HttpStatus.UNAUTHORIZED.value())
+                .errorMessage("UNAUTHORIZED!")
+                .build();
+    }
 
     @Override
     public ResponseDto<?> getAllLocations() {
@@ -32,6 +62,7 @@ public class LocationServiceImpl implements LocationService {
                 .data(locations)
                 .build();
     }
+
 
     @Override
     public ResponseDto<?> getLocationsByPageNumber(Integer pageNumber) {
@@ -124,7 +155,7 @@ public class LocationServiceImpl implements LocationService {
                             double vertical = Double.parseDouble((String)cellStoreVector.get(7));
                             double confidence = Double.parseDouble((String)cellStoreVector.get(8));
                             String activity = (String)cellStoreVector.get(9);
-                            int pageNumber = Integer.parseInt((String)cellStoreVector.get(10))+1;
+                            int pageNumber = (int)Double.parseDouble((String)cellStoreVector.get(10));
                             Location location = new Location(lat, lng, alt, identifier, timestamp, floor, horizontal, vertical, confidence,activity, pageNumber);
                             locationRepository.save(location);
                         }
@@ -137,11 +168,4 @@ public class LocationServiceImpl implements LocationService {
         }
         return false;
     }
-
-
-
-//    @Override
-//    public ResponseDto<?> updateLocation(Location location) {
-//        return null;
-//    }
 }
