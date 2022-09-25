@@ -31,7 +31,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/admin/**").hasAnyRole("SUPER_ADMIN")
-                .antMatchers("/api/user/**").authenticated()
+                .antMatchers("/api/user/**", "/api/ws/**").authenticated()
                 .antMatchers("/v2/api-docs/**",
                         "/v3/api-docs/**",
                         "/swagger-resources/**",
